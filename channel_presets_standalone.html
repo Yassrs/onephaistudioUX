@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhAI Studio — Channel Presets</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .container {
+    background: #e8eaed;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 820px;
+  }
+
+  .sidebar {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    width: 260px;
+    flex-shrink: 0;
+    padding: 1rem;
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-header span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  .axis-btns {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .btn-axis {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .btn-axis.active {
+    background: #1e3a8a;
+    color: #fff;
+    border: none;
+  }
+
+  .btn-axis.inactive {
+    background: transparent;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+  }
+
+  .section-divider {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .presets-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+
+  .preset-btn {
+    font-size: 11px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: transparent;
+    color: #0f172a;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .preset-btn:hover {
+    background: #f1f5f9;
+  }
+
+  .preset-btn.active {
+    background: #eff6ff;
+    border-color: #1e3a8a;
+    color: #1e3a8a;
+  }
+
+  .preset-btn i { font-size: 12px; }
+
+  .channels-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .cat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .cat-row:last-child { border-bottom: none; }
+
+  .cat-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #0f172a;
+  }
+
+  .cat-left i { font-size: 12px; color: #94a3b8; }
+
+  .cat-count { font-size: 11px; color: #64748b; }
+
+  .cat-count.has-selection { color: #1e3a8a; font-weight: 500; }
+
+  .clear-btn {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    font-family: inherit;
+  }
+
+  .waveform-area {
+    flex: 1;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+  }
+
+  .empty-state {
+    text-align: center;
+  }
+
+  .empty-state i {
+    font-size: 32px;
+    color: #cbd5e1;
+  }
+
+  .empty-state p {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 8px;
+    max-width: 200px;
+    line-height: 1.5;
+  }
+
+  .waveform-active {
+    display: none;
+    width: 100%;
+    height: 100%;
+  }
+
+  .waveform-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .waveform-top .label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  .waveform-top .count {
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  canvas {
+    width: 100%;
+    height: 280px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span>Waveform Settings</span>
+      <i class="ti ti-x" style="font-size:15px; color:#94a3b8; cursor:pointer;" aria-hidden="true"></i>
+    </div>
+
+    <div class="axis-btns">
+      <button class="btn-axis active">Auto-fit</button>
+      <button class="btn-axis inactive">Custom</button>
+    </div>
+
+    <div class="section-divider">
+      <p class="section-label">Presets</p>
+      <div class="presets-grid">
+        <button class="preset-btn" data-preset="joint-angles" onclick="applyPreset(this)">
+          <i class="ti ti-rotate" aria-hidden="true"></i> Joint Angles
+        </button>
+        <button class="preset-btn" data-preset="joint-velocities" onclick="applyPreset(this)">
+          <i class="ti ti-trending-up" aria-hidden="true"></i> Joint Velocities
+        </button>
+        <button class="preset-btn" data-preset="grf-imu" onclick="applyPreset(this)">
+          <i class="ti ti-activity" aria-hidden="true"></i> GRF + IMU
+        </button>
+        <button class="preset-btn" data-preset="motor" onclick="applyPreset(this)">
+          <i class="ti ti-bolt" aria-hidden="true"></i> Motor
+        </button>
+        <button class="preset-btn" data-preset="quality" onclick="applyPreset(this)">
+          <i class="ti ti-shield-check" aria-hidden="true"></i> Quality Check
+        </button>
+        <button class="preset-btn" data-preset="left" onclick="applyPreset(this)">
+          <i class="ti ti-arrow-left" aria-hidden="true"></i> Left side
+        </button>
+        <button class="preset-btn" data-preset="right" onclick="applyPreset(this)">
+          <i class="ti ti-arrow-right" aria-hidden="true"></i> Right side
+        </button>
+        <button class="preset-btn" data-preset="full" onclick="applyPreset(this)">
+          <i class="ti ti-layout-grid" aria-hidden="true"></i> Full body
+        </button>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <div class="channels-header">
+        <p class="section-label" style="margin:0;">Channels</p>
+        <span class="cat-count" id="total-count">0 selected</span>
+      </div>
+
+      <div id="cat-list">
+        <div class="cat-row">
+          <div class="cat-left"><i class="ti ti-chevron-right" aria-hidden="true"></i> Joint Angle</div>
+          <span class="cat-count" id="ja-count">0 / 15</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-left"><i class="ti ti-chevron-right" aria-hidden="true"></i> Joint Velocity</div>
+          <span class="cat-count" id="jv-count">0 / 27</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-left"><i class="ti ti-chevron-right" aria-hidden="true"></i> GRF</div>
+          <span class="cat-count" id="grf-count">0 / 28</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-left"><i class="ti ti-chevron-right" aria-hidden="true"></i> IMU</div>
+          <span class="cat-count" id="imu-count">0 / 55</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-left"><i class="ti ti-chevron-right" aria-hidden="true"></i> Motor</div>
+          <span class="cat-count" id="motor-count">0 / 2</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-left"><i class="ti ti-chevron-right" aria-hidden="true"></i> State</div>
+          <span class="cat-count" id="state-count">0 / 8</span>
+        </div>
+        <div class="cat-row">
+          <div class="cat-left"><i class="ti ti-chevron-right" aria-hidden="true"></i> Other</div>
+          <span class="cat-count" id="other-count">0 / 52</span>
+        </div>
+      </div>
+
+      <button class="clear-btn" onclick="clearAll()">Clear all</button>
+    </div>
+  </div>
+
+  <div class="waveform-area" id="waveform-area">
+    <div class="empty-state" id="empty-state">
+      <i class="ti ti-chart-line" aria-hidden="true"></i>
+      <p>Select a preset or add channels to visualize data</p>
+    </div>
+
+    <div class="waveform-active" id="waveform-active">
+      <div class="waveform-top">
+        <span class="label" id="active-label">Waveform</span>
+        <span class="count" id="active-count"></span>
+      </div>
+      <canvas id="wave-canvas"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const presets = {
+  'joint-angles':     { ja:15, jv:0,  grf:0,  imu:0,  motor:0, state:0, other:0,  label:'Joint Angles',     total:15  },
+  'joint-velocities': { ja:0,  jv:27, grf:0,  imu:0,  motor:0, state:0, other:0,  label:'Joint Velocities', total:27  },
+  'grf-imu':          { ja:0,  jv:0,  grf:28, imu:55, motor:0, state:0, other:0,  label:'GRF + IMU',        total:83  },
+  'motor':            { ja:0,  jv:0,  grf:0,  imu:0,  motor:2, state:0, other:0,  label:'Motor',            total:2   },
+  'quality':          { ja:0,  jv:0,  grf:0,  imu:0,  motor:0, state:8, other:5,  label:'Quality Check',    total:13  },
+  'left':             { ja:7,  jv:13, grf:14, imu:27, motor:1, state:0, other:0,  label:'Left side',        total:62  },
+  'right':            { ja:8,  jv:14, grf:14, imu:28, motor:1, state:0, other:0,  label:'Right side',       total:63  },
+  'full':             { ja:15, jv:27, grf:28, imu:55, motor:2, state:8, other:52, label:'Full body',         total:187 }
+};
+
+const maxes = { ja:15, jv:27, grf:28, imu:55, motor:2, state:8, other:52 };
+let animFrame = null;
+
+function applyPreset(btn) {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const p = presets[btn.dataset.preset];
+
+  Object.entries(maxes).forEach(([key, max]) => {
+    const el = document.getElementById(key + '-count');
+    const val = p[key];
+    el.textContent = val + ' / ' + max;
+    el.className = 'cat-count' + (val > 0 ? ' has-selection' : '');
+  });
+
+  document.getElementById('total-count').textContent = p.total + ' selected';
+  document.getElementById('active-label').textContent = p.label;
+  document.getElementById('active-count').textContent = p.total + ' channels';
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('waveform-active').style.display = 'block';
+
+  drawWave(p.total);
+}
+
+function clearAll() {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  Object.entries(maxes).forEach(([key, max]) => {
+    const el = document.getElementById(key + '-count');
+    el.textContent = '0 / ' + max;
+    el.className = 'cat-count';
+  });
+  document.getElementById('total-count').textContent = '0 selected';
+  document.getElementById('empty-state').style.display = 'block';
+  document.getElementById('waveform-active').style.display = 'none';
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+}
+
+function drawWave(nChannels) {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  const canvas = document.getElementById('wave-canvas');
+  const ctx = canvas.getContext('2d');
+  const colors = ['#1e3a8a','#0f6e56','#993c1d','#534ab7','#854f0b','#993556'];
+  let t = 0;
+
+  function frame() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const n = Math.min(nChannels, 6);
+    for (let i = 0; i < n; i++) {
+      ctx.beginPath();
+      ctx.strokeStyle = colors[i % colors.length];
+      ctx.lineWidth = 1.2;
+      ctx.globalAlpha = 0.85;
+      const amp = canvas.height / (n * 2.5);
+      const yBase = (canvas.height / n) * i + (canvas.height / n) / 2;
+      const freq = 0.02 + i * 0.005;
+      const phase = i * 0.8;
+      for (let x = 0; x < canvas.width; x++) {
+        const y = yBase + amp * Math.sin(freq * x + t + phase) * Math.cos(0.3 * freq * x + t * 0.7);
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    t += 0.04;
+    animFrame = requestAnimationFrame(frame);
+  }
+  frame();
+}
+</script>
+
+</body>
+</html>
