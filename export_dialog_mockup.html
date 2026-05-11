@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhAI Studio — Post-Recording Modal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .overlay {
+    background: rgba(0,0,0,0.45);
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 520px;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .dialog {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .dialog-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+
+  .dialog-desc {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field:last-of-type { margin-bottom: 1.25rem; }
+
+  label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  label .muted {
+    font-weight: 400;
+    color: #64748b;
+    margin-left: 4px;
+  }
+
+  label i { font-size: 13px; vertical-align: -1px; margin-right: 4px; color: #64748b; }
+
+  input[type="text"], textarea {
+    width: 100%;
+    font-size: 13px;
+    font-family: inherit;
+    padding: 7px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s;
+    color: #0f172a;
+    background: #fff;
+  }
+
+  input[type="text"]:focus, textarea:focus {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 2px rgba(30,58,138,0.12);
+  }
+
+  textarea { resize: none; line-height: 1.5; }
+
+  .footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn {
+    font-size: 13px;
+    font-family: inherit;
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid #cbd5e1;
+    background: transparent;
+    color: #0f172a;
+    transition: background 0.15s;
+  }
+
+  .btn:hover { background: #f1f5f9; }
+
+  .btn-primary {
+    background: #1e3a8a;
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary:hover { background: #1e40af; }
+
+  .fmt-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    margin-bottom: 8px;
+  }
+
+  .fmt-card:last-child { margin-bottom: 0; }
+
+  .fmt-card.selected {
+    border: 1.5px solid #1e3a8a;
+    background: #eff6ff;
+  }
+
+  .fmt-card i {
+    font-size: 20px;
+    color: #94a3b8;
+    flex-shrink: 0;
+  }
+
+  .fmt-card.selected i { color: #1e3a8a; }
+
+  .fmt-card .fmt-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e3a8a;
+    margin-bottom: 2px;
+  }
+
+  .fmt-card .fmt-desc {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .fmt-grid { margin-bottom: 1rem; }
+
+  .note {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 1.25rem;
+  }
+
+  .step { display: none; }
+  .step.active { display: block; }
+
+  .step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 1.25rem;
+  }
+
+  .step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    transition: background 0.2s;
+  }
+
+  .step-dot.active { background: #1e3a8a; }
+</style>
+</head>
+<body>
+
+<div class="overlay">
+  <div class="dialog">
+
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+    </div>
+
+    <!-- Step 1 — Metadata -->
+    <div class="step active" id="step1">
+      <p class="dialog-title">Name your session</p>
+      <p class="dialog-desc">Your recording has been saved. Add a name and details to find it easily later.</p>
+
+      <div class="field">
+        <label>Session name</label>
+        <input type="text" placeholder="" />
+      </div>
+
+      <div class="field">
+        <label>
+          <i class="ti ti-tag"></i>Tags
+          <span class="muted">(comma-separated)</span>
+        </label>
+        <input type="text" placeholder="" />
+      </div>
+
+      <div class="field">
+        <label>
+          <i class="ti ti-file-text"></i>Description
+          <span class="muted">optional</span>
+        </label>
+        <textarea rows="3" placeholder=""></textarea>
+      </div>
+
+      <div class="footer">
+        <button class="btn" onclick="goTo(2)">Skip</button>
+        <button class="btn btn-primary" onclick="goTo(2)">
+          Next <i class="ti ti-arrow-right" style="font-size:13px;"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2 — Export format -->
+    <div class="step" id="step2">
+      <p class="dialog-title">Export Recording</p>
+      <p class="dialog-desc">Your recording has been saved. Choose a format for local download.</p>
+
+      <div class="fmt-grid">
+        <div class="fmt-card selected" onclick="selectFmt(this)">
+          <i class="ti ti-file-spreadsheet"></i>
+          <div>
+            <p class="fmt-label">CSV</p>
+            <p class="fmt-desc">Comma-separated values, universal compatibility</p>
+          </div>
+        </div>
+        <div class="fmt-card" onclick="selectFmt(this)">
+          <i class="ti ti-database"></i>
+          <div>
+            <p class="fmt-label">HDF5</p>
+            <p class="fmt-desc">Hierarchical Data Format, pipeline-compatible</p>
+          </div>
+        </div>
+        <div class="fmt-card" onclick="selectFmt(this)">
+          <i class="ti ti-binary"></i>
+          <div>
+            <p class="fmt-label">NPY</p>
+            <p class="fmt-desc">NumPy array format, Python-ready</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="note">Recording has been automatically uploaded to the server.</p>
+
+      <div class="footer">
+        <button class="btn" onclick="goTo(1)">Skip download</button>
+        <button class="btn btn-primary">
+          <i class="ti ti-download" style="font-size:13px;"></i> Download
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function goTo(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.step-dot').forEach(d => d.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  document.getElementById('dot' + n).classList.add('active');
+}
+
+function selectFmt(el) {
+  document.querySelectorAll('.fmt-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+
+</body>
+</html>
