@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhAI Studio — Session Hover Preview</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  .container {
+    background: #e8eaed;
+    border-radius: 12px;
+    padding: 1rem;
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .table-wrap {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-header .title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  .table-header .badge {
+    font-size: 12px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1px 7px;
+    color: #64748b;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead tr {
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 500;
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  th:first-child { padding-left: 16px; }
+
+  tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    cursor: default;
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f8fafc; }
+
+  td {
+    padding: 10px 12px;
+    color: #64748b;
+  }
+
+  td:first-child { padding-left: 16px; }
+
+  .td-name { color: #0f172a; }
+  .td-name.named { font-weight: 500; }
+
+  .badge-ready {
+    font-size: 11px;
+    background: #ecfdf5;
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    padding: 2px 7px;
+    color: #065f46;
+  }
+
+  .tag {
+    font-size: 11px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1px 6px;
+    color: #64748b;
+    margin-right: 4px;
+  }
+
+  .preview-card {
+    display: none;
+    position: absolute;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 12px 14px;
+    width: 270px;
+    z-index: 10;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .preview-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+
+  .preview-desc {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+
+  .preview-desc.empty { color: #94a3b8; font-style: italic; }
+
+  .preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .preview-stat {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 6px 8px;
+  }
+
+  .preview-stat .label {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 2px;
+  }
+
+  .preview-stat .value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f172a;
+  }
+
+  .preview-tags { margin-bottom: 8px; }
+
+  .preview-author {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="container">
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="title">Sessions</span>
+      <span class="badge">63</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Tags</th>
+          <th>Duration</th>
+          <th>Started</th>
+          <th>Device</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="preview-card" id="preview-card">
+    <p class="preview-name" id="p-name"></p>
+    <p class="preview-desc" id="p-desc"></p>
+    <div class="preview-grid">
+      <div class="preview-stat">
+        <p class="label">Duration</p>
+        <p class="value" id="p-duration"></p>
+      </div>
+      <div class="preview-stat">
+        <p class="label">Recordings</p>
+        <p class="value" id="p-recordings"></p>
+      </div>
+    </div>
+    <div class="preview-tags" id="p-tags"></div>
+    <div class="preview-author">
+      <i class="ti ti-user" style="font-size:13px;" aria-hidden="true"></i>
+      <span id="p-author"></span>
+    </div>
+  </div>
+
+</div>
+
+<p class="hint">Hover over a row to see the preview card</p>
+
+<script>
+const sessions = [
+  { name:'Team Korea — Trial 1 — 1.0 m/s', named:true, tags:['level-walk','1.0mps'], duration:'2m 17s', started:'May 11, 2026, 10:45 AM', device:'KIT H10 #03', desc:'First morning run, slight left drift at heel strike. Check GRF_Left channels.', recordings:2, author:'Yassine Sersar' },
+  { name:'Recording May 9, 18:58', named:false, tags:[], duration:'2s', started:'May 9, 2026, 06:58 PM', device:'-', desc:'', recordings:1, author:'Abhiraj Singh' },
+  { name:'Team Korea — Trial 2 — 1.2 m/s', named:true, tags:['level-walk','1.2mps','trial-2'], duration:'1m 49s', started:'Apr 30, 2026, 07:43 PM', device:'KIT H10 #03', desc:'Increased speed trial. Motor torque peaks higher than expected on right side.', recordings:1, author:'Yassine Sersar' },
+  { name:'Recording Apr 30, 19:27', named:false, tags:[], duration:'2m 11s', started:'Apr 30, 2026, 07:27 PM', device:'-', desc:'', recordings:1, author:'Abhiraj Singh' },
+  { name:'Incline test — 10deg — slow', named:true, tags:['incline','0.8mps'], duration:'2m 12s', started:'Apr 30, 2026, 06:57 PM', device:'KIT H10 #01', desc:'Incline corridor test. Participant reported slight discomfort left hip at t=45s.', recordings:3, author:'Yassine Sersar' },
+  { name:'Recording Apr 30, 18:15', named:false, tags:[], duration:'1m 55s', started:'Apr 30, 2026, 06:15 PM', device:'-', desc:'', recordings:1, author:'Abhiraj Singh' },
+];
+
+const tbody = document.getElementById('tbody');
+const card = document.getElementById('preview-card');
+const container = document.getElementById('container');
+let timer = null;
+
+sessions.forEach(s => {
+  const tr = document.createElement('tr');
+
+  const tagsHtml = s.tags.length
+    ? s.tags.map(t => `<span class="tag">#${t}</span>`).join('')
+    : '-';
+
+  tr.innerHTML = `
+    <td class="td-name${s.named ? ' named' : ''}">${s.name}</td>
+    <td><span class="badge-ready">ready</span></td>
+    <td>${tagsHtml}</td>
+    <td>${s.duration}</td>
+    <td>${s.started}</td>
+    <td>${s.device}</td>
+  `;
+
+  tr.addEventListener('mouseenter', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => showCard(s, tr), 300);
+  });
+
+  tr.addEventListener('mouseleave', () => {
+    clearTimeout(timer);
+    card.style.display = 'none';
+  });
+
+  tbody.appendChild(tr);
+});
+
+function showCard(s, tr) {
+  document.getElementById('p-name').textContent = s.name;
+
+  const desc = document.getElementById('p-desc');
+  if (s.desc) {
+    desc.textContent = s.desc;
+    desc.className = 'preview-desc';
+  } else {
+    desc.textContent = 'No description provided.';
+    desc.className = 'preview-desc empty';
+  }
+
+  document.getElementById('p-duration').textContent = s.duration;
+  document.getElementById('p-recordings').textContent = s.recordings + ' file' + (s.recordings > 1 ? 's' : '');
+  document.getElementById('p-author').textContent = s.author;
+
+  const tagsEl = document.getElementById('p-tags');
+  if (s.tags.length) {
+    tagsEl.style.display = 'block';
+    tagsEl.innerHTML = s.tags.map(t => `<span class="tag">#${t}</span>`).join('');
+  } else {
+    tagsEl.style.display = 'none';
+  }
+
+  const trRect = tr.getBoundingClientRect();
+  const cRect = container.getBoundingClientRect();
+
+  card.style.display = 'block';
+  card.style.top = (trRect.bottom - cRect.top + 4) + 'px';
+  card.style.left = '16px';
+}
+</script>
+
+</body>
+</html>
