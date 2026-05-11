@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhAI Studio — Status Bar Improvements</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f1f5f9;
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .block { width: 100%; max-width: 900px; }
+
+  .block-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .workspace {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .workspace-body {
+    height: 80px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #cbd5e1;
+    letter-spacing: 0.05em;
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 12px;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    font-size: 12px;
+    color: #94a3b8;
+    gap: 6px;
+  }
+
+  .spacer { flex: 1; }
+
+  .before-rec-btn {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+
+  .before-rec-icon {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #ef4444;
+  }
+
+  .after-bar {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 12px;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    font-size: 12px;
+    color: #94a3b8;
+    gap: 8px;
+  }
+
+  .record-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .record-btn.idle { background: #ef4444; color: #fff; }
+  .record-btn.idle:hover { background: #dc2626; }
+  .record-btn.active { background: #fff; color: #ef4444; border: 1.5px solid #ef4444; }
+  .record-btn.active:hover { background: #fef2f2; }
+
+  .record-btn .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  .record-btn.active .dot { animation: blink 1s infinite; }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  .mono { font-family: 'Courier New', monospace; }
+
+  .q-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+  }
+
+  .q-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .q-dot.green  { background: #10b981; }
+  .q-dot.orange { background: #f59e0b; animation: blink 1.5s infinite; }
+  .q-dot.red    { background: #ef4444; animation: blink 0.7s infinite; }
+
+  .q-val { font-size: 11px; font-family: 'Courier New', monospace; transition: color 0.3s; }
+  .q-lbl { font-size: 10px; color: #94a3b8; }
+  .q-sep { font-size: 10px; color: #e2e8f0; }
+
+  .q-val.green  { color: #10b981; }
+  .q-val.orange { color: #f59e0b; }
+  .q-val.red    { color: #ef4444; }
+
+  .controls {
+    width: 100%; max-width: 900px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+
+  .controls-title {
+    font-size: 11px; font-weight: 600;
+    color: #64748b; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 12px;
+  }
+
+  .sliders { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 12px; }
+
+  .slider-group label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: #94a3b8; margin-bottom: 4px;
+  }
+
+  .slider-group label span { font-family: 'Courier New', monospace; color: #64748b; }
+
+  input[type="range"] { width: 100%; accent-color: #1e3a8a; }
+
+  .scenarios { display: flex; gap: 8px; }
+
+  .sc-btn {
+    font-size: 12px; padding: 4px 12px;
+    border-radius: 6px; border: 1px solid #e2e8f0;
+    background: transparent; color: #64748b;
+    cursor: pointer; font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .sc-btn:hover { background: #f8fafc; }
+  .sc-btn.active { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+
+  .hint { font-size: 11px; color: #94a3b8; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<!-- BEFORE -->
+<div class="block">
+  <p class="block-label">Before — current status bar</p>
+  <div class="workspace">
+    <div class="workspace-body">Waveform panels</div>
+    <div class="bar">
+      <div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #cbd5e1;flex-shrink:0;"></div>
+      <div class="before-rec-btn">
+        <div class="before-rec-icon"></div>
+      </div>
+      <span class="mono" style="color:#64748b;">00:00:37</span>
+      <span style="color:#e2e8f0;">·</span>
+      <span>Demo XM10 Exoskeleton</span>
+      <span style="color:#e2e8f0;">|</span>
+      <span>187 channels</span>
+      <span style="color:#cbd5e1;font-size:13px;margin-left:2px;cursor:pointer;">×</span>
+      <div class="spacer"></div>
+      <span style="font-size:11px;color:#cbd5e1;">14:40:20</span>
+    </div>
+  </div>
+</div>
+
+<!-- AFTER -->
+<div class="block">
+  <p class="block-label">After — prominent record button + quality indicator</p>
+  <div class="workspace">
+    <div class="workspace-body">Waveform panels</div>
+    <div class="after-bar">
+      <button class="record-btn idle" id="record-btn" onclick="toggleRecord()">
+        <span class="dot"></span>
+        <span id="btn-label">Start Recording</span>
+      </button>
+      <span class="mono" style="color:#64748b;" id="timer">00:00:00</span>
+      <span style="color:#e2e8f0;">·</span>
+      <span>Demo XM10 Exoskeleton</span>
+      <span style="color:#e2e8f0;">|</span>
+      <span>187 channels</span>
+      <span style="color:#cbd5e1;font-size:13px;margin-left:2px;cursor:pointer;">×</span>
+      <div class="spacer"></div>
+      <div class="q-pill">
+        <div class="q-dot green" id="q-dot"></div>
+        <span class="q-lbl">CRC</span><span class="q-val green" id="m-crc">0</span>
+        <span class="q-sep">/</span>
+        <span class="q-lbl">Drop</span><span class="q-val green" id="m-drop">0.00%</span>
+        <span class="q-sep">/</span>
+        <span class="q-lbl">Gap</span><span class="q-val green" id="m-gap">0</span>
+      </div>
+      <span style="font-size:11px;color:#cbd5e1;margin-left:6px;">14:40:20</span>
+    </div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <p class="controls-title">Simulate quality scenarios</p>
+  <div class="sliders">
+    <div class="slider-group">
+      <label>CRC errors <span id="v-crc">0</span></label>
+      <input type="range" min="0" max="20" value="0" step="1" id="s-crc" oninput="update()">
+    </div>
+    <div class="slider-group">
+      <label>Dropout rate <span id="v-drop">0.00%</span></label>
+      <input type="range" min="0" max="5" value="0" step="0.1" id="s-drop" oninput="update()">
+    </div>
+    <div class="slider-group">
+      <label>Gap count <span id="v-gap">0</span></label>
+      <input type="range" min="0" max="30" value="0" step="1" id="s-gap" oninput="update()">
+    </div>
+  </div>
+  <div class="scenarios">
+    <button class="sc-btn active" onclick="scenario('good',this)">All good</button>
+    <button class="sc-btn" onclick="scenario('warning',this)">Warning</button>
+    <button class="sc-btn" onclick="scenario('critical',this)">Critical</button>
+  </div>
+  <p class="hint">Click "Start Recording" then adjust quality to see the indicator react.</p>
+</div>
+
+<script>
+let recording = false, secs = 0, iv = null;
+
+function toggleRecord() {
+  recording = !recording;
+  const btn = document.getElementById('record-btn');
+  const lbl = document.getElementById('btn-label');
+  if (recording) {
+    btn.className = 'record-btn active';
+    lbl.textContent = 'Stop Recording';
+    iv = setInterval(() => {
+      secs++;
+      const m = String(Math.floor(secs/60)).padStart(2,'0');
+      const s = String(secs%60).padStart(2,'0');
+      document.getElementById('timer').textContent = '00:'+m+':'+s;
+    }, 1000);
+  } else {
+    btn.className = 'record-btn idle';
+    lbl.textContent = 'Start Recording';
+    clearInterval(iv); secs = 0;
+    document.getElementById('timer').textContent = '00:00:00';
+  }
+}
+
+function update() {
+  const crc  = parseInt(document.getElementById('s-crc').value);
+  const drop = parseFloat(document.getElementById('s-drop').value);
+  const gap  = parseInt(document.getElementById('s-gap').value);
+  document.getElementById('v-crc').textContent  = crc;
+  document.getElementById('v-drop').textContent = drop.toFixed(2)+'%';
+  document.getElementById('v-gap').textContent  = gap;
+  document.getElementById('m-crc').textContent  = crc;
+  document.getElementById('m-drop').textContent = drop.toFixed(2)+'%';
+  document.getElementById('m-gap').textContent  = gap;
+  const lvl = crc > 0 ? 'red' : (drop > 1 || gap > 5) ? 'orange' : 'green';
+  ['m-crc','m-drop','m-gap'].forEach(id => document.getElementById(id).className = 'q-val '+lvl);
+  document.getElementById('q-dot').className = 'q-dot '+lvl;
+  document.querySelectorAll('.sc-btn').forEach(b => b.classList.remove('active'));
+}
+
+function scenario(type, btn) {
+  document.querySelectorAll('.sc-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const s = {good:{crc:0,drop:0,gap:0}, warning:{crc:0,drop:2.4,gap:12}, critical:{crc:7,drop:4.1,gap:28}}[type];
+  document.getElementById('s-crc').value  = s.crc;
+  document.getElementById('s-drop').value = s.drop;
+  document.getElementById('s-gap').value  = s.gap;
+  update();
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
